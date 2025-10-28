@@ -1056,6 +1056,14 @@
         .admin-dashboard-actions .admin-btn.post-news:hover {
             background-color: var(--light-accent);
         }
+        /* Estilo para o botão de reset */
+        .admin-dashboard-actions .admin-btn.reset-data {
+            background-color: var(--error-color); /* Vermelho para reset */
+            color: var(--admin-text-light);
+        }
+        .admin-dashboard-actions .admin-btn.reset-data:hover {
+            filter: brightness(0.9);
+        }
 
 
         .table-responsive {
@@ -1504,7 +1512,7 @@
                     <h2>Gerenciamento de Conteúdo</h2>
                     <div class="admin-dashboard-actions">
                         <button id="admin-post-news-btn" class="admin-btn post-news"><i class="fas fa-plus"></i> Postar Nova Notícia</button>
-                        <!-- Adicione outros botões de gerenciamento se necessário -->
+                        <button id="admin-reset-data-btn" class="admin-btn reset-data"><i class="fas fa-redo"></i> Resetar Dados do App</button>
                     </div>
                 </section>
                 <section class="admin-section-dashboard">
@@ -1697,35 +1705,51 @@
 
             // --- Funções de persistência no localStorage ---
             function saveToLocalStorage(key, data) {
-                localStorage.setItem(key, JSON.stringify(data));
+                try {
+                    localStorage.setItem(key, JSON.stringify(data));
+                } catch (e) {
+                    console.error("Erro ao salvar no localStorage para a chave:", key, e);
+                    alert("Seu navegador está no modo privado ou sem espaço, os dados podem não ser salvos.");
+                }
             }
 
             function loadFromLocalStorage(key, defaultValue) {
-                const data = localStorage.getItem(key);
-                return data ? JSON.parse(data) : defaultValue;
+                try {
+                    const data = localStorage.getItem(key);
+                    return data ? JSON.parse(data) : defaultValue;
+                } catch (e) {
+                    console.error("Erro ao carregar do localStorage para a chave:", key, e);
+                    return defaultValue; // Retorna o valor padrão em caso de erro
+                }
             }
 
-            // --- Simulação de dados: Usuários, Postagens e Notícias (agora com persistência) ---
-            let registeredUsers = loadFromLocalStorage('registeredUsers', [
+            // --- Dados Iniciais Padrão ---
+            const defaultInitialRegisteredUsers = [
                 { id: 1, user: 'Newox', pass: 'objeto', email: 'newox.user@example.com', status: 'Ativo' },
-            ]);
-            let nextUserId = registeredUsers.length > 0 ? Math.max(...registeredUsers.map(u => u.id)) + 1 : 1;
-
-            let sitePosts = loadFromLocalStorage('sitePosts', [
+            ];
+            const defaultInitialSitePosts = [
                 { id: 1, title: '5 Dicas Essenciais para Aumentar sua Produtividade', content: 'Pequenas mudanças diárias podem levar a grandes resultados. Descubra como ser mais eficiente.', author: 'Newox Vanguard', authorId: 1, date: 'Outubro 27, 2025' },
                 { id: 2, title: 'Desenvolva sua Criatividade: Exercícios Práticos', content: 'A criatividade é uma habilidade que pode ser treinada. Liberte seu potencial criativo.', author: 'Equipe Vanguard', authorId: 0, date: 'Outubro 26, 2025' }
-            ]);
-            let nextPostId = sitePosts.length > 0 ? Math.max(...sitePosts.map(p => p.id)) + 1 : 1;
-
-            let siteNews = loadFromLocalStorage('siteNews', [
+            ];
+            const defaultInitialSiteNews = [
                 { id: 1, title: 'O Impacto da IA na Sociedade Moderna', content: 'Descubra como a inteligência artificial está moldando nosso futuro e transformando indústrias.', author: 'Admin', date: 'Outubro 28, 2025', image: 'https://via.placeholder.com/400x250/00C9A7/0A1128?text=Tecnologia' },
                 { id: 2, title: 'Análise do Mercado Financeiro Global 2025', content: 'Tendências e previsões para a economia mundial no próximo ano. O que esperar?', author: 'Admin', date: 'Outubro 28, 2025', image: 'https://via.placeholder.com/400x250/FFD700/0A1128?text=Economia' },
                 { id: 3, title: 'Inovações Sustentáveis que Podem Salvar o Planeta', content: 'Conheça projetos e tecnologias revolucionárias focadas na sustentabilidade ambiental.', author: 'Admin', date: 'Outubro 27, 2025', image: 'https://via.placeholder.com/400x250/1B2A41/E0E0E0?text=Inovacao' }
-            ]);
+            ];
+
+            // --- Carrega dados do localStorage ou usa valores padrão ---
+            let registeredUsers = loadFromLocalStorage('registeredUsers', defaultInitialRegisteredUsers);
+            let nextUserId = registeredUsers.length > 0 ? Math.max(...registeredUsers.map(u => u.id)) + 1 : 1;
+
+            let sitePosts = loadFromLocalStorage('sitePosts', defaultInitialSitePosts);
+            let nextPostId = sitePosts.length > 0 ? Math.max(...sitePosts.map(p => p.id)) + 1 : 1;
+
+            let siteNews = loadFromLocalStorage('siteNews', defaultInitialSiteNews);
             let nextNewsId = siteNews.length > 0 ? Math.max(...siteNews.map(n => n.id)) + 1 : 1;
 
-            let loggedInUser = loadFromLocalStorage('loggedInUser', null); // Carrega o usuário logado
-            let isAdminLoggedIn = loadFromLocalStorage('isAdminLoggedIn', false); // Carrega status do admin
+            let loggedInUser = loadFromLocalStorage('loggedInUser', null);
+            let isAdminLoggedIn = loadFromLocalStorage('isAdminLoggedIn', false);
+
 
             // --- Funções para controlar a visibilidade das seções ---
             function hideAllSections() {
@@ -1779,7 +1803,6 @@
 
             function showAdminDashboard(e) {
                 if (e) e.preventDefault();
-                // Verifica novamente o status do admin (em caso de navegação direta)
                 if (!isAdminLoggedIn) {
                     showAdminLogin();
                     return;
@@ -1818,8 +1841,10 @@
                 siteNews.slice().reverse().forEach(news => {
                     const article = document.createElement('article');
                     article.classList.add('news-card');
+                    // Imagem padrão se a notícia não tiver uma (para as criadas pelo admin)
+                    const imageUrl = news.image || `https://via.placeholder.com/400x250/00C9A7/0A1128?text=Noticia`;
                     article.innerHTML = `
-                        <img src="${news.image}" alt="${news.title}">
+                        <img src="${imageUrl}" alt="${news.title}">
                         <div class="card-content">
                             <h3>${news.title}</h3>
                             <p>${news.content.substring(0, 100)}...</p>
@@ -1839,8 +1864,10 @@
                 sitePosts.slice().reverse().forEach(post => {
                     const article = document.createElement('article');
                     article.classList.add('post-card');
+                    // Imagem padrão para postagens de usuários
+                    const imageUrl = `https://via.placeholder.com/300x200/${(post.authorId % 2 === 0 ? 'FFD700' : '00C9A7')}/0A1128?text=Postagem`;
                     article.innerHTML = `
-                        <img src="https://via.placeholder.com/300x200/${(post.authorId % 2 === 0 ? 'FFD700' : '00C9A7')}/0A1128?text=Postagem" alt="${post.title}">
+                        <img src="${imageUrl}" alt="${post.title}">
                         <div class="card-content">
                             <h4>${post.title}</h4>
                             <p class="post-meta">Por ${post.author} | ${post.date}</p>
@@ -2005,7 +2032,7 @@
                     loginMessage.style.color = '#2ecc71';
                     loginMessage.classList.add('show');
                     loggedInUser = userFound;
-                    saveToLocalStorage('loggedInUser', loggedInUser); // Salva o usuário logado
+                    saveToLocalStorage('loggedInUser', loggedInUser);
 
                     setTimeout(() => {
                         closeModal(loginModal);
@@ -2029,7 +2056,7 @@
                     sidebarAuthBtn.classList.remove('login');
                     sidebarRegisterBtn.style.display = 'none';
                     sidebarCreatePostBtn.style.display = 'flex';
-                    sidebarLogoutBtn.style.display = 'flex'; // Mostra o botão de logout
+                    sidebarLogoutBtn.style.display = 'flex';
                 } else {
                     sidebarAuthBtn.innerHTML = '<i class="fas fa-user-circle"></i> Login';
                     sidebarAuthBtn.classList.remove('profile-btn');
@@ -2087,7 +2114,7 @@
                     status: 'Ativo'
                 };
                 registeredUsers.push(newUser);
-                saveToLocalStorage('registeredUsers', registeredUsers); // Salva novos usuários
+                saveToLocalStorage('registeredUsers', registeredUsers);
 
                 registerMessage.textContent = 'Registro bem-sucedido! Faça login agora.';
                 registerMessage.style.color = '#2ecc71';
@@ -2097,7 +2124,6 @@
                     closeModal(registerModal);
                     openModal(loginModal);
                     usernameInput.value = username;
-                    // populateUserData(); // Não precisa atualizar aqui, só no admin dashboard
                 }, 1500);
             });
 
@@ -2130,7 +2156,7 @@
                     date: currentDate
                 };
                 sitePosts.push(newPost);
-                saveToLocalStorage('sitePosts', sitePosts); // Salva novas postagens
+                saveToLocalStorage('sitePosts', sitePosts);
 
                 createPostMessage.textContent = 'Postagem criada com sucesso!';
                 createPostMessage.style.color = '#2ecc71';
@@ -2139,8 +2165,8 @@
                 setTimeout(() => {
                     closeModal(createPostModal);
                     renderPosts();
-                    // populateUserProfile(); // Atualiza as postagens no perfil do usuário
-                    updateAdminStats(); // Atualiza as estatísticas no admin
+                    populateUserProfile(); // Atualiza as postagens no perfil do usuário
+                    updateAdminStats();
                     showSiteSection('postagens');
                 }, 1500);
             });
@@ -2209,7 +2235,7 @@
 
                         isAdminLoggedIn = true;
                         saveToLocalStorage('isAdminLoggedIn', true);
-                        saveToLocalStorage('adminUser', username); // Salva o nome do admin
+                        saveToLocalStorage('adminUser', username);
 
                         setTimeout(() => {
                             showAdminDashboard();
@@ -2239,19 +2265,18 @@
             function populateUserData() {
                 if (!userDataBody) return;
 
-                if (!isAdminLoggedIn) { // Verifica o estado de isAdminLoggedIn
+                if (!isAdminLoggedIn) {
                     showAdminLogin();
                     return;
                 }
 
-                const loggedInAdminUser = loadFromLocalStorage('adminUser', 'Admin'); // Puxa o nome do admin do localStorage
+                const loggedInAdminUser = loadFromLocalStorage('adminUser', 'Admin');
                 if (adminWelcome) {
                     adminWelcome.textContent = `Olá, ${loggedInAdminUser}!`;
                 }
 
                 userDataBody.innerHTML = '';
 
-                // Inclui todos os usuários (iniciais + registrados dinamicamente)
                 registeredUsers.forEach(user => {
                     const row = userDataBody.insertRow();
                     row.innerHTML = `
@@ -2285,9 +2310,15 @@
                     registeredUsers = registeredUsers.filter(user => user.id !== id);
                     if (registeredUsers.length < initialLength) {
                         alert(`Usuário com ID: ${id} excluído (simulado).`);
-                        saveToLocalStorage('registeredUsers', registeredUsers); // Salva a lista atualizada
+                        saveToLocalStorage('registeredUsers', registeredUsers);
+                        // Também remove posts do usuário excluído, se houver
+                        sitePosts = sitePosts.filter(post => post.authorId !== id);
+                        saveToLocalStorage('sitePosts', sitePosts);
+                        
                         populateUserData();
                         updateAdminStats();
+                        renderPosts(); // Atualiza posts no site principal
+                        populateUserProfile(); // Atualiza posts no perfil caso esteja aberto
                     } else {
                         alert(`Usuário com ID: ${id} não encontrado.`);
                     }
@@ -2325,7 +2356,7 @@
                     image: `https://via.placeholder.com/400x250/00C9A7/0A1128?text=Nova+Noticia+${nextNewsId-1}`
                 };
                 siteNews.push(newNews);
-                saveToLocalStorage('siteNews', siteNews); // Salva novas notícias
+                saveToLocalStorage('siteNews', siteNews);
 
                 createNewsMessage.textContent = 'Notícia publicada com sucesso!';
                 createNewsMessage.style.color = '#2ecc71';
@@ -2338,6 +2369,35 @@
                     showAdminDashboard();
                 }, 1500);
             });
+
+            // --- Admin Reset Data Button ---
+            const adminResetDataBtn = document.getElementById('admin-reset-data-btn');
+            if (adminResetDataBtn) {
+                adminResetDataBtn.addEventListener('click', () => {
+                    if (confirm('Tem certeza que deseja resetar TODOS os dados do aplicativo (usuários, posts, notícias)? Esta ação é irreversível.')) {
+                        // Limpa todos os itens do localStorage usados pelo app
+                        localStorage.removeItem('registeredUsers');
+                        localStorage.removeItem('sitePosts');
+                        localStorage.removeItem('siteNews');
+                        localStorage.removeItem('loggedInUser');
+                        localStorage.removeItem('isAdminLoggedIn');
+                        localStorage.removeItem('adminUser');
+
+                        // Reset in-memory data to defaults
+                        registeredUsers = JSON.parse(JSON.stringify(defaultInitialRegisteredUsers)); // Deep copy
+                        nextUserId = registeredUsers.length > 0 ? Math.max(...registeredUsers.map(u => u.id)) + 1 : 1;
+                        sitePosts = JSON.parse(JSON.stringify(defaultInitialSitePosts)); // Deep copy
+                        nextPostId = sitePosts.length > 0 ? Math.max(...sitePosts.map(p => p.id)) + 1 : 1;
+                        siteNews = JSON.parse(JSON.stringify(defaultInitialSiteNews)); // Deep copy
+                        nextNewsId = siteNews.length > 0 ? Math.max(...siteNews.map(n => n.id)) + 1 : 1;
+                        loggedInUser = null;
+                        isAdminLoggedIn = false;
+
+                        alert('Todos os dados do aplicativo foram resetados. A página será recarregada.');
+                        location.reload(); // Recarrega a página para aplicar os novos defaults
+                    }
+                });
+            }
 
 
             // Lógica de Logout do Admin (Botão no Dashboard)
@@ -2359,6 +2419,8 @@
             } else {
                 showMainSite();
             }
+            // Atualiza os botões da sidebar no carregamento, mesmo que não esteja logado
+            updateSidebarAuthButtons();
         });
     </script>
 </body>
