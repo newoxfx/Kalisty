@@ -1709,7 +1709,7 @@
                     localStorage.setItem(key, JSON.stringify(data));
                 } catch (e) {
                     console.error("Erro ao salvar no localStorage para a chave:", key, e);
-                    alert("Seu navegador está no modo privado ou sem espaço, os dados podem não ser salvos.");
+                    // Opcional: alert("Seu navegador está no modo privado ou sem espaço, os dados podem não ser salvos.");
                 }
             }
 
@@ -1719,7 +1719,8 @@
                     return data ? JSON.parse(data) : defaultValue;
                 } catch (e) {
                     console.error("Erro ao carregar do localStorage para a chave:", key, e);
-                    return defaultValue; // Retorna o valor padrão em caso de erro
+                    // Se houver um erro de parsing (dados corrompidos), retorne o valor padrão
+                    return defaultValue;
                 }
             }
 
@@ -1738,13 +1739,14 @@
             ];
 
             // --- Carrega dados do localStorage ou usa valores padrão ---
-            let registeredUsers = loadFromLocalStorage('registeredUsers', defaultInitialRegisteredUsers);
+            // Certifique-se de que cada array carregado não seja nulo ou indefinido, usando || []
+            let registeredUsers = loadFromLocalStorage('registeredUsers', defaultInitialRegisteredUsers) || [];
             let nextUserId = registeredUsers.length > 0 ? Math.max(...registeredUsers.map(u => u.id)) + 1 : 1;
 
-            let sitePosts = loadFromLocalStorage('sitePosts', defaultInitialSitePosts);
+            let sitePosts = loadFromLocalStorage('sitePosts', defaultInitialSitePosts) || [];
             let nextPostId = sitePosts.length > 0 ? Math.max(...sitePosts.map(p => p.id)) + 1 : 1;
 
-            let siteNews = loadFromLocalStorage('siteNews', defaultInitialSiteNews);
+            let siteNews = loadFromLocalStorage('siteNews', defaultInitialSiteNews) || [];
             let nextNewsId = siteNews.length > 0 ? Math.max(...siteNews.map(n => n.id)) + 1 : 1;
 
             let loggedInUser = loadFromLocalStorage('loggedInUser', null);
@@ -1841,7 +1843,6 @@
                 siteNews.slice().reverse().forEach(news => {
                     const article = document.createElement('article');
                     article.classList.add('news-card');
-                    // Imagem padrão se a notícia não tiver uma (para as criadas pelo admin)
                     const imageUrl = news.image || `https://via.placeholder.com/400x250/00C9A7/0A1128?text=Noticia`;
                     article.innerHTML = `
                         <img src="${imageUrl}" alt="${news.title}">
@@ -1864,7 +1865,6 @@
                 sitePosts.slice().reverse().forEach(post => {
                     const article = document.createElement('article');
                     article.classList.add('post-card');
-                    // Imagem padrão para postagens de usuários
                     const imageUrl = `https://via.placeholder.com/300x200/${(post.authorId % 2 === 0 ? 'FFD700' : '00C9A7')}/0A1128?text=Postagem`;
                     article.innerHTML = `
                         <img src="${imageUrl}" alt="${post.title}">
@@ -1986,7 +1986,7 @@
             sidebarLogoutBtn.addEventListener('click', (e) => {
                 e.preventDefault();
                 loggedInUser = null;
-                localStorage.removeItem('loggedInUser');
+                saveToLocalStorage('loggedInUser', null); // Limpa o usuário logado
                 updateSidebarAuthButtons();
                 showMainSite();
                 alert('Você foi desconectado.');
@@ -2032,7 +2032,7 @@
                     loginMessage.style.color = '#2ecc71';
                     loginMessage.classList.add('show');
                     loggedInUser = userFound;
-                    saveToLocalStorage('loggedInUser', loggedInUser);
+                    saveToLocalStorage('loggedInUser', loggedInUser); // SALVANDO AQUI
 
                     setTimeout(() => {
                         closeModal(loginModal);
@@ -2114,7 +2114,7 @@
                     status: 'Ativo'
                 };
                 registeredUsers.push(newUser);
-                saveToLocalStorage('registeredUsers', registeredUsers);
+                saveToLocalStorage('registeredUsers', registeredUsers); // SALVANDO AQUI
 
                 registerMessage.textContent = 'Registro bem-sucedido! Faça login agora.';
                 registerMessage.style.color = '#2ecc71';
@@ -2156,7 +2156,7 @@
                     date: currentDate
                 };
                 sitePosts.push(newPost);
-                saveToLocalStorage('sitePosts', sitePosts);
+                saveToLocalStorage('sitePosts', sitePosts); // SALVANDO AQUI
 
                 createPostMessage.textContent = 'Postagem criada com sucesso!';
                 createPostMessage.style.color = '#2ecc71';
@@ -2165,7 +2165,7 @@
                 setTimeout(() => {
                     closeModal(createPostModal);
                     renderPosts();
-                    populateUserProfile(); // Atualiza as postagens no perfil do usuário
+                    populateUserProfile();
                     updateAdminStats();
                     showSiteSection('postagens');
                 }, 1500);
@@ -2187,6 +2187,7 @@
                 profileEmail.textContent = loggedInUser.email;
 
                 userPostsList.innerHTML = '';
+                // Filtra posts pelo ID do autor do usuário logado
                 const userSpecificPosts = sitePosts.filter(post => post.authorId === loggedInUser.id).reverse();
 
                 if (userSpecificPosts.length > 0) {
@@ -2234,8 +2235,8 @@
                         adminLoginMessage.classList.add('show');
 
                         isAdminLoggedIn = true;
-                        saveToLocalStorage('isAdminLoggedIn', true);
-                        saveToLocalStorage('adminUser', username);
+                        saveToLocalStorage('isAdminLoggedIn', true); // SALVANDO AQUI
+                        saveToLocalStorage('adminUser', username); // SALVANDO AQUI
 
                         setTimeout(() => {
                             showAdminDashboard();
@@ -2277,6 +2278,7 @@
 
                 userDataBody.innerHTML = '';
 
+                // Inclui todos os usuários (iniciais + registrados dinamicamente)
                 registeredUsers.forEach(user => {
                     const row = userDataBody.insertRow();
                     row.innerHTML = `
@@ -2306,19 +2308,27 @@
 
             window.deleteUser = (id) => {
                 if (confirm(`Tem certeza que deseja excluir o usuário com ID: ${id}?`)) {
-                    const initialLength = registeredUsers.length;
+                    const initialUserLength = registeredUsers.length;
                     registeredUsers = registeredUsers.filter(user => user.id !== id);
-                    if (registeredUsers.length < initialLength) {
+                    if (registeredUsers.length < initialUserLength) {
                         alert(`Usuário com ID: ${id} excluído (simulado).`);
                         saveToLocalStorage('registeredUsers', registeredUsers);
-                        // Também remove posts do usuário excluído, se houver
+                        
+                        // Remove posts do usuário excluído
                         sitePosts = sitePosts.filter(post => post.authorId !== id);
                         saveToLocalStorage('sitePosts', sitePosts);
                         
+                        // Se o usuário excluído era o que estava logado, desconecta-o
+                        if (loggedInUser && loggedInUser.id === id) {
+                            loggedInUser = null;
+                            saveToLocalStorage('loggedInUser', null);
+                            updateSidebarAuthButtons();
+                        }
+
                         populateUserData();
                         updateAdminStats();
-                        renderPosts(); // Atualiza posts no site principal
-                        populateUserProfile(); // Atualiza posts no perfil caso esteja aberto
+                        renderPosts();
+                        populateUserProfile(); // Caso o perfil esteja visível, atualiza
                     } else {
                         alert(`Usuário com ID: ${id} não encontrado.`);
                     }
@@ -2356,7 +2366,7 @@
                     image: `https://via.placeholder.com/400x250/00C9A7/0A1128?text=Nova+Noticia+${nextNewsId-1}`
                 };
                 siteNews.push(newNews);
-                saveToLocalStorage('siteNews', siteNews);
+                saveToLocalStorage('siteNews', siteNews); // SALVANDO AQUI
 
                 createNewsMessage.textContent = 'Notícia publicada com sucesso!';
                 createNewsMessage.style.color = '#2ecc71';
@@ -2383,18 +2393,8 @@
                         localStorage.removeItem('isAdminLoggedIn');
                         localStorage.removeItem('adminUser');
 
-                        // Reset in-memory data to defaults
-                        registeredUsers = JSON.parse(JSON.stringify(defaultInitialRegisteredUsers)); // Deep copy
-                        nextUserId = registeredUsers.length > 0 ? Math.max(...registeredUsers.map(u => u.id)) + 1 : 1;
-                        sitePosts = JSON.parse(JSON.stringify(defaultInitialSitePosts)); // Deep copy
-                        nextPostId = sitePosts.length > 0 ? Math.max(...sitePosts.map(p => p.id)) + 1 : 1;
-                        siteNews = JSON.parse(JSON.stringify(defaultInitialSiteNews)); // Deep copy
-                        nextNewsId = siteNews.length > 0 ? Math.max(...siteNews.map(n => n.id)) + 1 : 1;
-                        loggedInUser = null;
-                        isAdminLoggedIn = false;
-
                         alert('Todos os dados do aplicativo foram resetados. A página será recarregada.');
-                        location.reload(); // Recarrega a página para aplicar os novos defaults
+                        location.reload(); // Recarrega a página para aplicar os novos defaults (do código)
                     }
                 });
             }
@@ -2405,8 +2405,8 @@
                 adminLogoutBtnDashboard.addEventListener('click', (e) => {
                     e.preventDefault();
                     isAdminLoggedIn = false;
-                    localStorage.removeItem('isAdminLoggedIn');
-                    localStorage.removeItem('adminUser');
+                    localStorage.removeItem('isAdminLoggedIn'); // Limpa status de admin
+                    localStorage.removeItem('adminUser'); // Limpa nome do admin
                     showMainSite();
                     alert('Administrador desconectado.');
                 });
@@ -2414,13 +2414,15 @@
 
             // --- Inicialização ao Carregar a Página ---
             // Verifica o estado de login (admin ou usuário) ao carregar a página e mostra a seção apropriada
-            if (isAdminLoggedIn) {
-                showAdminDashboard();
-            } else {
-                showMainSite();
-            }
-            // Atualiza os botões da sidebar no carregamento, mesmo que não esteja logado
-            updateSidebarAuthButtons();
+            // Adicionado um pequeno delay para garantir que o DOM esteja completamente renderizado
+            setTimeout(() => {
+                if (isAdminLoggedIn) {
+                    showAdminDashboard();
+                } else {
+                    showMainSite();
+                }
+                updateSidebarAuthButtons(); // Garante que os botões da sidebar estão corretos
+            }, 100); // 100ms de delay
         });
     </script>
 </body>
