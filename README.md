@@ -1358,6 +1358,7 @@
         <button id="sidebar-auth-btn" class="sidebar-btn login"><i class="fas fa-user-circle"></i> Login</button>
         <button id="sidebar-register-btn" class="sidebar-btn"><i class="fas fa-user-plus"></i> Registrar</button>
         <button id="sidebar-create-post-btn" class="sidebar-btn create-post-btn" style="display: none;"><i class="fas fa-plus-square"></i> Criar Postagem</button>
+        <button id="sidebar-logout-btn" class="sidebar-btn" style="background-color: #e74c3c; display: none;"><i class="fas fa-sign-out-alt"></i> Sair</button>
     </div>
 
     <!-- Conteúdo Principal do Site (Visível por padrão) -->
@@ -1449,7 +1450,6 @@
                 <h3>Detalhes da Conta</h3>
                 <p><strong>Usuário:</strong> <span id="profile-username"></span></p>
                 <p><strong>Email:</strong> <span id="profile-email"></span></p>
-                <!-- Senha não é exibida por segurança -->
             </div>
 
             <div class="profile-posts">
@@ -1461,7 +1461,7 @@
             </div>
 
             <div class="text-center">
-                <button class="btn back-to-site-btn" onclick="showMainSite(event)"><i class="fas fa-arrow-left"></i> Voltar ao Site</button>
+                <button class="btn primary-btn back-to-site-btn" onclick="showMainSite(event)"><i class="fas fa-arrow-left"></i> Voltar ao Site</button>
             </div>
         </div>
     </div>
@@ -1493,7 +1493,7 @@
                 <h1>Painel de Administração</h1>
                 <nav class="admin-nav-dashboard">
                     <span id="admin-welcome">Olá, Admin!</span>
-                    <a href="#" id="admin-logout-btn" class="logout-btn"><i class="fas fa-sign-out-alt"></i> Sair</a>
+                    <a href="#" id="admin-logout-btn-dashboard" class="logout-btn"><i class="fas fa-sign-out-alt"></i> Sair</a>
                 </nav>
             </div>
         </header>
@@ -1678,13 +1678,13 @@
 
 
     <script>
-        // JAVASCRIPT CONSOLIDADO DO SITE E ADMIN
+        // JAVASCRIPT CONSOLIDADO DO SITE E ADMIN COM PERSISTÊNCIA VIA localStorage
 
         document.addEventListener('DOMContentLoaded', () => {
             const siteMainHeader = document.getElementById('site-main-header');
             const siteContent = document.getElementById('site-content');
             const siteMainFooter = document.getElementById('site-main-footer');
-            const userProfileSection = document.getElementById('user-profile-section'); // Nova seção
+            const userProfileSection = document.getElementById('user-profile-section');
             const adminLoginSection = document.getElementById('admin-login-section');
             const adminDashboardSection = document.getElementById('admin-dashboard-section');
             const mySidebar = document.getElementById('mySidebar');
@@ -1693,27 +1693,39 @@
             const sidebarAuthBtn = document.getElementById('sidebar-auth-btn'); // Botão de Login/Perfil
             const sidebarRegisterBtn = document.getElementById('sidebar-register-btn'); // Botão de Registrar
             const sidebarCreatePostBtn = document.getElementById('sidebar-create-post-btn'); // Botão de Criar Postagem
+            const sidebarLogoutBtn = document.getElementById('sidebar-logout-btn'); // Botão de Sair (logout)
 
-            // Simulação de dados: Usuários, Postagens e Notícias
-            let registeredUsers = [
+            // --- Funções de persistência no localStorage ---
+            function saveToLocalStorage(key, data) {
+                localStorage.setItem(key, JSON.stringify(data));
+            }
+
+            function loadFromLocalStorage(key, defaultValue) {
+                const data = localStorage.getItem(key);
+                return data ? JSON.parse(data) : defaultValue;
+            }
+
+            // --- Simulação de dados: Usuários, Postagens e Notícias (agora com persistência) ---
+            let registeredUsers = loadFromLocalStorage('registeredUsers', [
                 { id: 1, user: 'Newox', pass: 'objeto', email: 'newox.user@example.com', status: 'Ativo' },
-            ];
-            let nextUserId = 2; // Começa de 2, pois Newox é o 1
+            ]);
+            let nextUserId = registeredUsers.length > 0 ? Math.max(...registeredUsers.map(u => u.id)) + 1 : 1;
 
-            let sitePosts = [
+            let sitePosts = loadFromLocalStorage('sitePosts', [
                 { id: 1, title: '5 Dicas Essenciais para Aumentar sua Produtividade', content: 'Pequenas mudanças diárias podem levar a grandes resultados. Descubra como ser mais eficiente.', author: 'Newox Vanguard', authorId: 1, date: 'Outubro 27, 2025' },
                 { id: 2, title: 'Desenvolva sua Criatividade: Exercícios Práticos', content: 'A criatividade é uma habilidade que pode ser treinada. Liberte seu potencial criativo.', author: 'Equipe Vanguard', authorId: 0, date: 'Outubro 26, 2025' }
-            ];
-            let nextPostId = 3;
+            ]);
+            let nextPostId = sitePosts.length > 0 ? Math.max(...sitePosts.map(p => p.id)) + 1 : 1;
 
-            let siteNews = [
+            let siteNews = loadFromLocalStorage('siteNews', [
                 { id: 1, title: 'O Impacto da IA na Sociedade Moderna', content: 'Descubra como a inteligência artificial está moldando nosso futuro e transformando indústrias.', author: 'Admin', date: 'Outubro 28, 2025', image: 'https://via.placeholder.com/400x250/00C9A7/0A1128?text=Tecnologia' },
                 { id: 2, title: 'Análise do Mercado Financeiro Global 2025', content: 'Tendências e previsões para a economia mundial no próximo ano. O que esperar?', author: 'Admin', date: 'Outubro 28, 2025', image: 'https://via.placeholder.com/400x250/FFD700/0A1128?text=Economia' },
                 { id: 3, title: 'Inovações Sustentáveis que Podem Salvar o Planeta', content: 'Conheça projetos e tecnologias revolucionárias focadas na sustentabilidade ambiental.', author: 'Admin', date: 'Outubro 27, 2025', image: 'https://via.placeholder.com/400x250/1B2A41/E0E0E0?text=Inovacao' }
-            ];
-            let nextNewsId = 4;
+            ]);
+            let nextNewsId = siteNews.length > 0 ? Math.max(...siteNews.map(n => n.id)) + 1 : 1;
 
-            let loggedInUser = null; // Armazena o usuário logado atualmente
+            let loggedInUser = loadFromLocalStorage('loggedInUser', null); // Carrega o usuário logado
+            let isAdminLoggedIn = loadFromLocalStorage('isAdminLoggedIn', false); // Carrega status do admin
 
             // --- Funções para controlar a visibilidade das seções ---
             function hideAllSections() {
@@ -1729,16 +1741,16 @@
 
             function showMainSite(e) {
                 if (e) e.preventDefault();
-                hideAllSections(); // Esconde tudo primeiro
+                hideAllSections();
                 siteMainHeader.style.display = 'flex';
                 siteContent.style.display = 'block';
                 siteMainFooter.style.display = 'flex';
                 document.body.style.backgroundColor = 'var(--primary-bg)';
                 document.body.style.color = 'var(--text-color)';
                 document.body.style.fontFamily = 'Poppins, sans-serif';
-                renderNews(); // Renderiza as notícias
-                renderPosts(); // Renderiza as postagens
-                updateSidebarAuthButtons(); // Atualiza botões da sidebar
+                renderNews();
+                renderPosts();
+                updateSidebarAuthButtons();
             }
 
             function showUserProfileSection(e) {
@@ -1750,10 +1762,10 @@
                 }
                 hideAllSections();
                 userProfileSection.style.display = 'block';
-                document.body.style.backgroundColor = 'var(--primary-bg)'; // Mantém o tema do site
+                document.body.style.backgroundColor = 'var(--primary-bg)';
                 document.body.style.color = 'var(--text-color)';
                 document.body.style.fontFamily = 'Poppins, sans-serif';
-                populateUserProfile(); // Preenche os dados do perfil
+                populateUserProfile();
             }
 
             function showAdminLogin(e) {
@@ -1767,12 +1779,17 @@
 
             function showAdminDashboard(e) {
                 if (e) e.preventDefault();
+                // Verifica novamente o status do admin (em caso de navegação direta)
+                if (!isAdminLoggedIn) {
+                    showAdminLogin();
+                    return;
+                }
                 hideAllSections();
                 adminDashboardSection.style.display = 'flex';
                 document.body.style.backgroundColor = 'var(--admin-bg-light)';
                 document.body.style.color = 'var(--admin-text-dark)';
                 document.body.style.fontFamily = 'Roboto, sans-serif';
-                populateUserData(); // Preenche os dados do admin
+                populateUserData();
                 updateAdminStats();
             }
 
@@ -1796,9 +1813,9 @@
                 const newsGridContainer = document.getElementById('news-grid-container');
                 if (!newsGridContainer) return;
 
-                newsGridContainer.innerHTML = ''; // Limpa antes de renderizar
+                newsGridContainer.innerHTML = '';
 
-                siteNews.slice().reverse().forEach(news => { // Inverte para mostrar as mais recentes primeiro
+                siteNews.slice().reverse().forEach(news => {
                     const article = document.createElement('article');
                     article.classList.add('news-card');
                     article.innerHTML = `
@@ -1817,9 +1834,9 @@
                 const postsGridContainer = document.getElementById('posts-grid-container');
                 if (!postsGridContainer) return;
 
-                postsGridContainer.innerHTML = ''; // Limpa antes de renderizar
+                postsGridContainer.innerHTML = '';
 
-                sitePosts.slice().reverse().forEach(post => { // Inverte para mostrar as mais recentes primeiro
+                sitePosts.slice().reverse().forEach(post => {
                     const article = document.createElement('article');
                     article.classList.add('post-card');
                     article.innerHTML = `
@@ -1846,13 +1863,12 @@
 
             window.showSiteSection = (id, event) => {
                 if (event) event.preventDefault();
-                showMainSite(); // Garante que o site principal e seus elementos são visíveis
+                showMainSite();
                 setTimeout(() => {
                     const targetElement = document.getElementById(id);
                     if (targetElement) {
                         targetElement.scrollIntoView({ behavior: 'smooth' });
                     }
-                    // Atualiza a classe 'active' nos links de navegação da sidebar
                     document.querySelectorAll('#mySidebar a').forEach(link => link.classList.remove('active'));
                     const correspondingLink = document.querySelector(`#mySidebar a[href="#${id}"]`);
                     if (correspondingLink) correspondingLink.classList.add('active');
@@ -1873,7 +1889,6 @@
                 entries.forEach(entry => {
                     if (entry.isIntersecting) {
                         entry.target.classList.add('active');
-                        // observer.unobserve(entry.target); // Desativei para que a animação possa reaparecer ao rolar
                     }
                 });
             }, options);
@@ -1909,7 +1924,7 @@
             const loginModal = document.getElementById('login-modal');
             const registerModal = document.getElementById('register-modal');
             const createPostModal = document.getElementById('create-post-modal');
-            const createNewsModal = document.getElementById('create-news-modal'); // Novo modal
+            const createNewsModal = document.getElementById('create-news-modal');
 
             // Funções genéricas para abrir/fechar modais
             function openModal(modalElement) {
@@ -1927,9 +1942,9 @@
             // Event Listeners para botões da sidebar
             sidebarAuthBtn.addEventListener('click', () => {
                 if (loggedInUser) {
-                    showUserProfileSection(); // Se logado, vai para o perfil
+                    showUserProfileSection();
                 } else {
-                    openModal(loginModal); // Senão, abre o login
+                    openModal(loginModal);
                 }
             });
             sidebarRegisterBtn.addEventListener('click', () => openModal(registerModal));
@@ -1940,6 +1955,14 @@
                     alert('Você precisa estar logado para criar uma postagem!');
                     openModal(loginModal);
                 }
+            });
+            sidebarLogoutBtn.addEventListener('click', (e) => {
+                e.preventDefault();
+                loggedInUser = null;
+                localStorage.removeItem('loggedInUser');
+                updateSidebarAuthButtons();
+                showMainSite();
+                alert('Você foi desconectado.');
             });
 
 
@@ -1981,12 +2004,12 @@
                     loginMessage.textContent = 'Login bem-sucedido!';
                     loginMessage.style.color = '#2ecc71';
                     loginMessage.classList.add('show');
-                    loggedInUser = userFound; // Define o usuário como logado
+                    loggedInUser = userFound;
+                    saveToLocalStorage('loggedInUser', loggedInUser); // Salva o usuário logado
 
                     setTimeout(() => {
                         closeModal(loginModal);
-                        updateSidebarAuthButtons(); // Atualiza botões da sidebar
-                        // Opcional: Redirecionar para o perfil ou para a home
+                        updateSidebarAuthButtons();
                         showMainSite();
                     }, 1500);
 
@@ -2003,15 +2026,17 @@
                 if (loggedInUser) {
                     sidebarAuthBtn.innerHTML = `<i class="fas fa-user-circle"></i> Olá, ${loggedInUser.user}!`;
                     sidebarAuthBtn.classList.add('profile-btn');
-                    sidebarAuthBtn.classList.remove('login'); // Remove o estilo de login
-                    sidebarRegisterBtn.style.display = 'none'; // Esconde Registrar
-                    sidebarCreatePostBtn.style.display = 'flex'; // Mostra Criar Postagem
+                    sidebarAuthBtn.classList.remove('login');
+                    sidebarRegisterBtn.style.display = 'none';
+                    sidebarCreatePostBtn.style.display = 'flex';
+                    sidebarLogoutBtn.style.display = 'flex'; // Mostra o botão de logout
                 } else {
                     sidebarAuthBtn.innerHTML = '<i class="fas fa-user-circle"></i> Login';
                     sidebarAuthBtn.classList.remove('profile-btn');
                     sidebarAuthBtn.classList.add('login');
                     sidebarRegisterBtn.style.display = 'flex';
                     sidebarCreatePostBtn.style.display = 'none';
+                    sidebarLogoutBtn.style.display = 'none';
                 }
             }
 
@@ -2054,15 +2079,15 @@
                     return;
                 }
 
-                // Simula o registro
                 const newUser = {
                     id: nextUserId++,
                     user: username,
-                    pass: password, // Em um sistema real, a senha seria hashada!
+                    pass: password,
                     email: email,
                     status: 'Ativo'
                 };
                 registeredUsers.push(newUser);
+                saveToLocalStorage('registeredUsers', registeredUsers); // Salva novos usuários
 
                 registerMessage.textContent = 'Registro bem-sucedido! Faça login agora.';
                 registerMessage.style.color = '#2ecc71';
@@ -2071,8 +2096,8 @@
                 setTimeout(() => {
                     closeModal(registerModal);
                     openModal(loginModal);
-                    usernameInput.value = username; // Preenche o nome de usuário no login
-                    populateUserData(); // Atualiza a lista de usuários no admin
+                    usernameInput.value = username;
+                    // populateUserData(); // Não precisa atualizar aqui, só no admin dashboard
                 }, 1500);
             });
 
@@ -2105,6 +2130,7 @@
                     date: currentDate
                 };
                 sitePosts.push(newPost);
+                saveToLocalStorage('sitePosts', sitePosts); // Salva novas postagens
 
                 createPostMessage.textContent = 'Postagem criada com sucesso!';
                 createPostMessage.style.color = '#2ecc71';
@@ -2112,10 +2138,10 @@
 
                 setTimeout(() => {
                     closeModal(createPostModal);
-                    renderPosts(); // Atualiza a seção de postagens no site
-                    populateUserProfile(); // Atualiza as postagens no perfil do usuário
+                    renderPosts();
+                    // populateUserProfile(); // Atualiza as postagens no perfil do usuário
                     updateAdminStats(); // Atualiza as estatísticas no admin
-                    showSiteSection('postagens'); // Leva o usuário para a seção de postagens
+                    showSiteSection('postagens');
                 }, 1500);
             });
 
@@ -2134,8 +2160,8 @@
                 profileUsername.textContent = loggedInUser.user;
                 profileEmail.textContent = loggedInUser.email;
 
-                userPostsList.innerHTML = ''; // Limpa antes de popular
-                const userSpecificPosts = sitePosts.filter(post => post.authorId === loggedInUser.id).reverse(); // Postagens do usuário logado
+                userPostsList.innerHTML = '';
+                const userSpecificPosts = sitePosts.filter(post => post.authorId === loggedInUser.id).reverse();
 
                 if (userSpecificPosts.length > 0) {
                     noUserPostsMessage.style.display = 'none';
@@ -2173,7 +2199,6 @@
                     const username = adminUsernameInput.value;
                     const password = adminPasswordInput.value;
 
-                    // Credenciais fixas para o admin
                     const correctAdminUsername = 'newox';
                     const correctAdminPassword = 'objeto';
 
@@ -2182,8 +2207,9 @@
                         adminLoginMessage.style.color = '#28a745';
                         adminLoginMessage.classList.add('show');
 
-                        sessionStorage.setItem('isAdminLoggedIn', 'true');
-                        sessionStorage.setItem('adminUser', username);
+                        isAdminLoggedIn = true;
+                        saveToLocalStorage('isAdminLoggedIn', true);
+                        saveToLocalStorage('adminUser', username); // Salva o nome do admin
 
                         setTimeout(() => {
                             showAdminDashboard();
@@ -2201,10 +2227,9 @@
             // Lógica para o Dashboard do Administrador
             const userDataBody = document.getElementById('user-data-body');
             const adminWelcome = document.getElementById('admin-welcome');
-            const adminLogoutBtn = document.getElementById('admin-logout-btn');
-            const adminPostNewsBtn = document.getElementById('admin-post-news-btn'); // Botão de Postar Notícia
+            const adminLogoutBtnDashboard = document.getElementById('admin-logout-btn-dashboard');
+            const adminPostNewsBtn = document.getElementById('admin-post-news-btn');
 
-            // Elementos para estatísticas
             const totalUsersStat = document.getElementById('total-users-stat');
             const totalPostsStat = document.getElementById('total-posts-stat');
             const totalNewsStat = document.getElementById('total-news-stat');
@@ -2214,12 +2239,12 @@
             function populateUserData() {
                 if (!userDataBody) return;
 
-                if (sessionStorage.getItem('isAdminLoggedIn') !== 'true') {
+                if (!isAdminLoggedIn) { // Verifica o estado de isAdminLoggedIn
                     showAdminLogin();
                     return;
                 }
 
-                const loggedInAdminUser = sessionStorage.getItem('adminUser') || 'Admin';
+                const loggedInAdminUser = loadFromLocalStorage('adminUser', 'Admin'); // Puxa o nome do admin do localStorage
                 if (adminWelcome) {
                     adminWelcome.textContent = `Olá, ${loggedInAdminUser}!`;
                 }
@@ -2250,10 +2275,8 @@
                 if (totalNewsStat) totalNewsStat.textContent = siteNews.length;
             }
 
-            // Simulação de funções de ação (apenas para demonstração)
             window.editUser = (id) => {
                 alert(`Editar usuário com ID: ${id}`);
-                // Em um sistema real, abriria um formulário de edição
             };
 
             window.deleteUser = (id) => {
@@ -2262,8 +2285,9 @@
                     registeredUsers = registeredUsers.filter(user => user.id !== id);
                     if (registeredUsers.length < initialLength) {
                         alert(`Usuário com ID: ${id} excluído (simulado).`);
-                        populateUserData(); // Recarrega a tabela
-                        updateAdminStats(); // Atualiza as estatísticas
+                        saveToLocalStorage('registeredUsers', registeredUsers); // Salva a lista atualizada
+                        populateUserData();
+                        updateAdminStats();
                     } else {
                         alert(`Usuário com ID: ${id} não encontrado.`);
                     }
@@ -2277,7 +2301,7 @@
             const createNewsMessage = document.getElementById('create-news-message');
 
             adminPostNewsBtn.addEventListener('click', () => {
-                if (sessionStorage.getItem('isAdminLoggedIn') !== 'true') {
+                if (!isAdminLoggedIn) {
                     alert('Você precisa estar logado como administrador para postar notícias!');
                     showAdminLogin();
                     return;
@@ -2296,12 +2320,12 @@
                     id: nextNewsId++,
                     title: title,
                     content: content,
-                    author: sessionStorage.getItem('adminUser') || 'Admin',
+                    author: loadFromLocalStorage('adminUser', 'Admin'),
                     date: currentDate,
-                    // Imagem genérica para novas notícias
                     image: `https://via.placeholder.com/400x250/00C9A7/0A1128?text=Nova+Noticia+${nextNewsId-1}`
                 };
                 siteNews.push(newNews);
+                saveToLocalStorage('siteNews', siteNews); // Salva novas notícias
 
                 createNewsMessage.textContent = 'Notícia publicada com sucesso!';
                 createNewsMessage.style.color = '#2ecc71';
@@ -2309,31 +2333,32 @@
 
                 setTimeout(() => {
                     closeModal(createNewsModal);
-                    renderNews(); // Atualiza a seção de notícias no site principal
-                    updateAdminStats(); // Atualiza as estatísticas do admin
-                    showAdminDashboard(); // Volta para o dashboard
+                    renderNews();
+                    updateAdminStats();
+                    showAdminDashboard();
                 }, 1500);
             });
 
 
-            // Lógica de Logout do Admin
-            if (adminLogoutBtn) {
-                adminLogoutBtn.addEventListener('click', (e) => {
+            // Lógica de Logout do Admin (Botão no Dashboard)
+            if (adminLogoutBtnDashboard) {
+                adminLogoutBtnDashboard.addEventListener('click', (e) => {
                     e.preventDefault();
-                    sessionStorage.removeItem('isAdminLoggedIn');
-                    sessionStorage.removeItem('adminUser');
+                    isAdminLoggedIn = false;
+                    localStorage.removeItem('isAdminLoggedIn');
+                    localStorage.removeItem('adminUser');
                     showMainSite();
+                    alert('Administrador desconectado.');
                 });
             }
 
             // --- Inicialização ao Carregar a Página ---
-            // Verifica o estado de login do admin ao carregar a página
-            if (sessionStorage.getItem('isAdminLoggedIn') === 'true') {
+            // Verifica o estado de login (admin ou usuário) ao carregar a página e mostra a seção apropriada
+            if (isAdminLoggedIn) {
                 showAdminDashboard();
             } else {
                 showMainSite();
             }
-            updateSidebarAuthButtons(); // Garante que os botões da sidebar estão corretos
         });
     </script>
 </body>
