@@ -95,10 +95,14 @@
             font-size: 1.8em;
             cursor: pointer;
             padding: 10px;
-            transition: color 0.3s ease;
+            transition: color 0.3s ease, transform 0.3s ease; /* Animação de rotação */
         }
         .menu-toggle:hover {
             color: var(--gold-color);
+            transform: scale(1.1);
+        }
+        .menu-toggle.active { /* Para quando a sidebar está aberta */
+            transform: rotate(90deg);
         }
 
         /* Sidebar de Navegação */
@@ -111,7 +115,7 @@
             right: 0; /* Desliza da direita */
             background-color: var(--secondary-bg);
             overflow-x: hidden;
-            transition: 0.5s;
+            transition: 0.5s cubic-bezier(0.65, 0.05, 0.36, 1); /* Curva de animação mais suave */
             padding-top: 60px;
             box-shadow: -5px 0 15px rgba(0,0,0,0.3);
             display: flex;
@@ -128,13 +132,14 @@
             font-size: 1.2em;
             color: var(--text-color);
             display: block;
-            transition: 0.3s;
+            transition: 0.3s ease-out;
             border-bottom: 1px solid rgba(255,255,255,0.05);
         }
 
         .sidebar a:hover, .sidebar a.active {
             color: var(--gold-color);
             background-color: var(--primary-bg);
+            transform: translateX(-5px); /* Pequeno deslocamento lateral */
         }
 
         .sidebar .closebtn {
@@ -144,48 +149,50 @@
             font-size: 3em;
             margin-left: 50px;
             color: var(--text-color);
+            transition: color 0.3s ease, transform 0.3s ease;
         }
         .sidebar .closebtn:hover {
             color: var(--gold-color);
+            transform: scale(1.1) rotate(90deg);
         }
 
         /* Botões dentro da sidebar */
         .sidebar .sidebar-btn {
-            background-color: var(--accent-color); /* Usando a cor de destaque */
-            color: var(--primary-bg); /* Texto escuro sobre destaque */
+            background-color: var(--accent-color);
+            color: var(--primary-bg);
             border: none;
             padding: 10px 20px;
             border-radius: 5px;
             cursor: pointer;
             font-size: 1.1em;
             font-weight: 600;
-            margin: 15px 25px; /* Ajustado para espaço */
-            transition: background-color 0.3s ease, transform 0.2s ease;
+            margin: 15px 25px;
+            transition: background-color 0.3s ease, transform 0.2s ease, box-shadow 0.3s ease;
             display: flex;
             align-items: center;
             gap: 8px;
             justify-content: center;
-            text-decoration: none; /* Para parecer um link também */
+            text-decoration: none;
         }
         .sidebar .sidebar-btn.login {
-            background-color: var(--gold-color); /* Dourado para Login */
+            background-color: var(--gold-color);
         }
-        .sidebar .sidebar-btn.profile-btn { /* Estilo para o botão de perfil logado */
+        .sidebar .sidebar-btn.profile-btn {
             background-color: var(--accent-color);
             color: var(--primary-bg);
         }
         .sidebar .sidebar-btn:hover {
             background-color: var(--light-accent);
-            color: var(--primary-bg); /* Mantém escuro para contraste */
-            transform: translateY(-2px);
+            color: var(--primary-bg);
+            transform: translateY(-2px) scale(1.02);
+            box-shadow: 0 5px 15px rgba(0,0,0,0.3);
         }
         .sidebar .sidebar-btn.login:hover {
             background-color: var(--gold-color);
-            filter: brightness(0.9); /* Escurece um pouco ao passar o mouse */
+            filter: brightness(0.9);
         }
-        /* Botão Criar Postagem para usuário logado */
         .sidebar .sidebar-btn.create-post-btn {
-            background-color: var(--gold-color); /* Dourado para Criar Postagem */
+            background-color: var(--gold-color);
             color: var(--primary-bg);
         }
         .sidebar .sidebar-btn.create-post-btn:hover {
@@ -202,7 +209,7 @@
             text-decoration: none;
             font-weight: 600;
             font-size: 1.05em;
-            transition: all 0.3s ease;
+            transition: all 0.3s ease, box-shadow 0.3s ease;
             cursor: pointer;
             border: none;
             display: flex;
@@ -213,12 +220,13 @@
 
         .primary-btn {
             background-color: var(--accent-color);
-            color: var(--primary-bg); /* Texto escuro */
+            color: var(--primary-bg);
         }
 
         .primary-btn:hover {
             background-color: var(--light-accent);
             transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(0,0,0,0.3);
         }
 
         .secondary-btn {
@@ -229,8 +237,9 @@
 
         .secondary-btn:hover {
             background-color: var(--accent-color);
-            color: var(--primary-bg); /* Texto escuro */
+            color: var(--primary-bg);
             transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(0,0,0,0.3);
         }
 
         /* Seção Hero (Tela Inicial) */
@@ -242,7 +251,6 @@
             justify-content: center;
             text-align: center;
             color: white;
-            /* Usando um fundo que combine com a nova paleta */
             background: url('https://via.placeholder.com/1920x1080/0A1128/FFFFFF?text=Vanguard+Evolution+Site') no-repeat center center/cover;
             background-size: cover;
             background-position: center;
@@ -279,6 +287,7 @@
             margin-top: 30px;
             margin-bottom: 0;
             position: relative;
+            perspective: 1000px; /* Para animação 3D */
         }
 
         .founder-info h3 {
@@ -301,21 +310,35 @@
             position: absolute;
             top: 50%;
             left: 50%;
-            transform: translate(-50%, -50%);
+            transform: translate(-50%, -50%) rotateY(0deg);
             line-height: 0.8;
             z-index: -1;
             text-shadow: 0 0 15px rgba(255, 215, 0, 0.3);
+            transition: transform 1s ease-in-out; /* Animação suave */
+        }
+        .hero-section:hover .big-v { /* Animação no hover da seção */
+            transform: translate(-50%, -50%) rotateY(15deg);
         }
 
         /* Animações Hero Section */
         @keyframes fadeInUp {
             from {
                 opacity: 0;
-                transform: translateY(20px);
+                transform: translateY(30px);
             }
             to {
                 opacity: 1;
                 transform: translateY(0);
+            }
+        }
+        @keyframes fadeInScale {
+            from {
+                opacity: 0;
+                transform: scale(0.9);
+            }
+            to {
+                opacity: 1;
+                transform: scale(1);
             }
         }
 
@@ -344,6 +367,7 @@
             color: var(--accent-color);
             position: relative;
             padding-bottom: 10px;
+            overflow: hidden; /* Para a animação do after */
         }
 
         .section-title::after {
@@ -351,11 +375,15 @@
             position: absolute;
             left: 50%;
             bottom: 0;
-            transform: translateX(-50%);
+            transform: translateX(-50%) scaleX(0); /* Começa escondido */
             width: 80px;
             height: 4px;
             background-color: var(--gold-color);
             border-radius: 2px;
+            transition: transform 0.6s cubic-bezier(0.175, 0.885, 0.32, 1.275); /* Animação de elasticidade */
+        }
+        .section-title.active::after { /* Anima no scroll */
+            transform: translateX(-50%) scaleX(1);
         }
 
         .section-title i {
@@ -389,8 +417,8 @@
         }
 
         .news-card:hover, .post-card:hover {
-            transform: translateY(-10px);
-            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.4);
+            transform: translateY(-8px) scale(1.02); /* Mais impacto */
+            box-shadow: 0 12px 25px rgba(0, 0, 0, 0.5);
         }
 
         .news-card img, .post-card img {
@@ -401,7 +429,7 @@
         }
 
         .news-card:hover img, .post-card:hover img {
-            transform: scale(1.05);
+            transform: scale(1.08); /* Aumenta um pouco mais no hover */
         }
 
         .card-content {
@@ -444,18 +472,19 @@
             align-items: center;
             gap: 5px;
             margin-top: auto;
-            transition: color 0.3s ease;
+            transition: color 0.3s ease, transform 0.2s ease;
         }
 
         .read-more:hover {
             color: var(--light-accent);
+            transform: translateX(5px);
         }
 
         /* Animações de Revelação de Seção */
         .reveal {
             opacity: 0;
             transform: translateY(50px);
-            transition: opacity 0.6s ease-out, transform 0.6s ease-out;
+            transition: opacity 0.8s cubic-bezier(0.175, 0.885, 0.32, 1.275), transform 0.8s cubic-bezier(0.175, 0.885, 0.32, 1.275);
         }
 
         .reveal.active {
@@ -464,54 +493,45 @@
         }
 
         /* Animações para Cards */
-        @keyframes scaleIn {
-            from {
-                opacity: 0;
-                transform: scale(0.9);
-            }
-            to {
-                opacity: 1;
-                transform: scale(1);
-            }
-        }
-        .animate-scale-in {
-            animation: scaleIn 0.6s ease-out forwards;
+        .news-card, .post-card {
+            animation: fadeInScale 0.7s ease-out forwards paused;
             opacity: 0;
         }
-        .animate-scale-in.delay-05 { animation-delay: 0.2s; }
-        .animate-scale-in.delay-1 { animation-delay: 0.4s; }
+        .news-card.delay-05 { animation-delay: 0.2s; }
+        .news-card.delay-1 { animation-delay: 0.4s; }
+
+        .post-card.animate-slide-in-left {
+            animation: slideInLeft 0.7s ease-out forwards paused;
+            opacity: 0;
+        }
+        .post-card.animate-slide-in-right {
+            animation: slideInRight 0.7s ease-out forwards paused;
+            opacity: 0;
+        }
+        .post-card.delay-05 { animation-delay: 0.2s; }
 
 
         @keyframes slideInLeft {
             from {
                 opacity: 0;
-                transform: translateX(-50px);
+                transform: translateX(-80px);
             }
             to {
                 opacity: 1;
                 transform: translateX(0);
             }
-        }
-        .animate-slide-in-left {
-            animation: slideInLeft 0.6s ease-out forwards;
-            opacity: 0;
         }
 
         @keyframes slideInRight {
             from {
                 opacity: 0;
-                transform: translateX(50px);
+                transform: translateX(80px);
             }
             to {
                 opacity: 1;
                 transform: translateX(0);
             }
         }
-        .animate-slide-in-right {
-            animation: slideInRight 0.6s ease-out forwards;
-            opacity: 0;
-        }
-        .animate-slide-in-right.delay-05 { animation-delay: 0.2s; }
 
         /* Sobre Nós */
         .about-content {
@@ -525,7 +545,12 @@
             max-width: 800px;
             margin-bottom: 20px;
             font-size: 1.1em;
+            animation: fadeInScale 0.8s ease-out forwards paused;
+            opacity: 0;
         }
+        .about-content p:nth-of-type(1) { animation-delay: 0.1s; }
+        .about-content p:nth-of-type(2) { animation-delay: 0.3s; }
+
 
         .about-content .about-image {
             width: 100%;
@@ -533,15 +558,9 @@
             border-radius: 10px;
             margin-top: 30px;
             box-shadow: 0 5px 15px rgba(0, 0, 0, 0.3);
-        }
-
-        @keyframes fadeIn {
-            from { opacity: 0; }
-            to { opacity: 1; }
-        }
-        .animate-fade-in {
-            animation: fadeIn 0.8s ease-out forwards;
+            animation: fadeInScale 0.8s ease-out forwards paused;
             opacity: 0;
+            animation-delay: 0.5s;
         }
 
         /* Contato */
@@ -552,6 +571,9 @@
             padding: 40px;
             border-radius: 10px;
             box-shadow: 0 5px 20px rgba(0, 0, 0, 0.4);
+            animation: fadeInScale 0.8s ease-out forwards paused;
+            opacity: 0;
+            animation-delay: 0.3s;
         }
 
         .form-group {
@@ -622,11 +644,12 @@
         footer.site-footer .footer-col ul li a {
             color: var(--text-color);
             text-decoration: none;
-            transition: color 0.3s ease;
+            transition: color 0.3s ease, transform 0.2s ease;
         }
 
         footer.site-footer .footer-col ul li a:hover {
             color: var(--gold-color);
+            transform: translateX(3px);
         }
 
         .social-links a {
@@ -638,7 +661,7 @@
 
         .social-links a:hover {
             color: var(--gold-color);
-            transform: translateY(-3px);
+            transform: translateY(-5px) scale(1.2);
         }
 
         .footer-bottom {
@@ -664,14 +687,15 @@
             font-size: 0.9em;
             font-weight: 600;
             text-decoration: none;
-            transition: background-color 0.3s ease, transform 0.2s ease;
+            transition: background-color 0.3s ease, transform 0.2s ease, box-shadow 0.3s ease;
             display: inline-flex;
             align-items: center;
             gap: 8px;
         }
         .footer-bottom .admin-link-btn:hover {
             background-color: var(--light-accent);
-            transform: translateY(-2px);
+            transform: translateY(-2px) scale(1.02);
+            box-shadow: 0 5px 15px rgba(0,0,0,0.3);
         }
         .footer-bottom .admin-link-btn i {
             font-size: 1.1em;
@@ -709,12 +733,14 @@
             max-width: 450px;
             position: relative;
             box-shadow: 0 5px 20px rgba(0, 0, 0, 0.5);
-            transform: translateY(-50px);
-            transition: transform 0.3s ease-in-out;
+            transform: translateY(-50px) scale(0.9); /* Inicia menor e acima */
+            opacity: 0;
+            transition: transform 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275), opacity 0.3s ease-out;
         }
 
         .modal.open .modal-content {
-            transform: translateY(0);
+            transform: translateY(0) scale(1); /* Desliza e aumenta */
+            opacity: 1;
         }
 
 
@@ -733,13 +759,13 @@
             top: 10px;
             font-weight: bold;
             cursor: pointer;
-            transition: color 0.3s ease;
+            transition: color 0.3s ease, transform 0.3s ease;
         }
 
         .close-button:hover,
         .close-button:focus {
             color: var(--gold-color);
-            text-decoration: none;
+            transform: rotate(90deg) scale(1.1);
         }
 
         .modal-content .form-group label {
@@ -771,15 +797,17 @@
 
         /* --- User Profile Section Styles --- */
         #user-profile-section {
-            display: none; /* Escondido por padrão */
+            display: none;
             background-color: var(--primary-bg);
-            min-height: calc(100vh - 100px); /* Ajuste para não sobrepor header/footer */
+            min-height: calc(100vh - 100px);
             padding: 60px 0;
             color: var(--text-color);
         }
         #user-profile-section .profile-header {
             text-align: center;
             margin-bottom: 50px;
+            animation: fadeInScale 0.8s ease-out forwards paused;
+            opacity: 0;
         }
         #user-profile-section .profile-header h2 {
             font-family: 'Montserrat', sans-serif;
@@ -799,7 +827,17 @@
             border-radius: 10px;
             box-shadow: 0 5px 15px rgba(0,0,0,0.3);
             margin-bottom: 40px;
+            animation: slideInUp 0.8s ease-out forwards paused;
+            opacity: 0;
         }
+        #user-profile-section .profile-details { animation-delay: 0.2s; }
+        #user-profile-section .profile-posts { animation-delay: 0.4s; }
+
+        @keyframes slideInUp {
+            from { opacity: 0; transform: translateY(30px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
         #user-profile-section h3 {
             font-family: 'Montserrat', sans-serif;
             font-size: 1.8em;
@@ -821,7 +859,15 @@
             border-radius: 8px;
             margin-bottom: 15px;
             box-shadow: 0 2px 8px rgba(0,0,0,0.2);
+            opacity: 0; /* Para animação de entrada */
+            animation: fadeInScale 0.5s ease-out forwards;
         }
+        #user-profile-section .user-posts-list li:nth-child(1) { animation-delay: 0.1s; }
+        #user-profile-section .user-posts-list li:nth-child(2) { animation-delay: 0.2s; }
+        #user-profile-section .user-posts-list li:nth-child(3) { animation-delay: 0.3s; }
+        /* Adicione mais seções de delay se houver muitas postagens */
+
+
         #user-profile-section .user-posts-list li h4 {
             color: var(--gold-color);
             font-size: 1.3em;
@@ -920,13 +966,15 @@
             cursor: pointer;
             font-size: 1.1em;
             font-weight: 700;
-            transition: background-color 0.3s ease;
+            transition: background-color 0.3s ease, transform 0.2s ease, box-shadow 0.3s ease;
             width: 100%;
             margin-top: 15px;
         }
 
         .admin-btn:hover {
             background-color: #555555;
+            transform: translateY(-2px) scale(1.02);
+            box-shadow: 0 5px 15px rgba(0,0,0,0.3);
         }
 
         .admin-error-message {
@@ -995,7 +1043,7 @@
             text-decoration: none;
             font-weight: 700;
             font-size: 0.95em;
-            transition: background-color 0.3s ease;
+            transition: background-color 0.3s ease, transform 0.2s ease, box-shadow 0.3s ease;
             display: flex;
             align-items: center;
             gap: 8px;
@@ -1003,6 +1051,8 @@
 
         .logout-btn:hover {
             background-color: #777;
+            transform: translateY(-2px) scale(1.02);
+            box-shadow: 0 5px 15px rgba(0,0,0,0.3);
         }
 
         .admin-main-dashboard {
@@ -1022,7 +1072,13 @@
             border-radius: 8px;
             box-shadow: 0 2px 10px rgba(0, 0, 0, 0.08);
             margin-bottom: 40px;
+            animation: fadeInScale 0.8s ease-out forwards paused;
+            opacity: 0;
         }
+        .admin-section-dashboard:nth-of-type(1) { animation-delay: 0.1s; }
+        .admin-section-dashboard:nth-of-type(2) { animation-delay: 0.3s; }
+        .admin-section-dashboard:nth-of-type(3) { animation-delay: 0.5s; }
+
 
         .admin-section-dashboard h2 {
             color: var(--admin-bg-dark);
@@ -1057,7 +1113,7 @@
         }
         /* Estilo para o botão de reset */
         .admin-dashboard-actions .admin-btn.reset-data {
-            background-color: var(--error-color); /* Vermelho para reset */
+            background-color: var(--error-color);
             color: var(--admin-text-light);
         }
         .admin-dashboard-actions .admin-btn.reset-data:hover {
@@ -1124,12 +1180,13 @@
             border-radius: 4px;
             cursor: pointer;
             margin-right: 5px;
-            transition: background-color 0.3s ease;
+            transition: background-color 0.3s ease, transform 0.2s ease;
             font-size: 0.8em;
         }
 
         .action-buttons button:hover {
             background-color: #555;
+            transform: translateY(-1px) scale(1.05);
         }
 
         /* Statistics Grid */
@@ -1146,11 +1203,12 @@
             border-radius: 8px;
             text-align: center;
             box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
-            transition: transform 0.3s ease;
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
         }
 
         .stat-card:hover {
-            transform: translateY(-5px);
+            transform: translateY(-5px) scale(1.02);
+            box-shadow: 0 8px 15px rgba(0,0,0,0.1);
         }
 
         .stat-card h3 {
@@ -1695,6 +1753,7 @@
             const adminLoginSection = document.getElementById('admin-login-section');
             const adminDashboardSection = document.getElementById('admin-dashboard-section');
             const mySidebar = document.getElementById('mySidebar');
+            const menuToggleBtn = document.querySelector('.menu-toggle');
             
             // Elementos da sidebar para controle de visibilidade
             const sidebarAuthBtn = document.getElementById('sidebar-auth-btn'); // Botão de Login/Perfil
@@ -1706,6 +1765,7 @@
             function saveToLocalStorage(key, data) {
                 try {
                     localStorage.setItem(key, JSON.stringify(data));
+                    console.log(`Dados salvos para ${key}:`, data); // Debugging
                 } catch (e) {
                     console.error("Erro ao salvar no localStorage para a chave:", key, e);
                     // Opcional: alert("Seu navegador está no modo privado ou sem espaço, os dados podem não ser salvos.");
@@ -1715,11 +1775,12 @@
             function loadFromLocalStorage(key, defaultValue) {
                 try {
                     const data = localStorage.getItem(key);
-                    return data ? JSON.parse(data) : defaultValue;
+                    const parsedData = data ? JSON.parse(data) : defaultValue;
+                    console.log(`Dados carregados para ${key}:`, parsedData); // Debugging
+                    return parsedData;
                 } catch (e) {
                     console.error("Erro ao carregar do localStorage para a chave:", key, e);
-                    // Se houver um erro de parsing (dados corrompidos), retorne o valor padrão
-                    return defaultValue;
+                    return defaultValue; // Retorna o valor padrão em caso de erro
                 }
             }
 
@@ -1738,14 +1799,14 @@
             ];
 
             // --- Carrega dados do localStorage ou usa valores padrão ---
-            // Certifique-se de que cada array carregado não seja nulo ou indefinido, usando || []
-            let registeredUsers = loadFromLocalStorage('registeredUsers', defaultInitialRegisteredUsers) || [];
+            // Usando o operador de coalescência nula (??) para garantir que é um array, mesmo que o JSON.parse retorne null/undefined
+            let registeredUsers = loadFromLocalStorage('registeredUsers', defaultInitialRegisteredUsers) ?? defaultInitialRegisteredUsers;
             let nextUserId = registeredUsers.length > 0 ? Math.max(...registeredUsers.map(u => u.id)) + 1 : 1;
 
-            let sitePosts = loadFromLocalStorage('sitePosts', defaultInitialSitePosts) || [];
+            let sitePosts = loadFromLocalStorage('sitePosts', defaultInitialSitePosts) ?? defaultInitialSitePosts;
             let nextPostId = sitePosts.length > 0 ? Math.max(...sitePosts.map(p => p.id)) + 1 : 1;
 
-            let siteNews = loadFromLocalStorage('siteNews', defaultInitialSiteNews) || [];
+            let siteNews = loadFromLocalStorage('siteNews', defaultInitialSiteNews) ?? defaultInitialSiteNews;
             let nextNewsId = siteNews.length > 0 ? Math.max(...siteNews.map(n => n.id)) + 1 : 1;
 
             let loggedInUser = loadFromLocalStorage('loggedInUser', null);
@@ -1761,6 +1822,7 @@
                 adminLoginSection.style.display = 'none';
                 adminDashboardSection.style.display = 'none';
                 mySidebar.classList.remove('open');
+                menuToggleBtn.classList.remove('active'); // Desativa rotação do hambúrguer
                 window.scrollTo(0, 0);
             }
 
@@ -1790,6 +1852,10 @@
                 document.body.style.backgroundColor = 'var(--primary-bg)';
                 document.body.style.color = 'var(--text-color)';
                 document.body.style.fontFamily = 'Poppins, sans-serif';
+                // Animar a entrada da seção de perfil
+                document.querySelectorAll('#user-profile-section .profile-header, #user-profile-section .profile-details, #user-profile-section .profile-posts').forEach(el => {
+                    el.style.animationPlayState = 'running';
+                });
                 populateUserProfile();
             }
 
@@ -1813,6 +1879,10 @@
                 document.body.style.backgroundColor = 'var(--admin-bg-light)';
                 document.body.style.color = 'var(--admin-text-dark)';
                 document.body.style.fontFamily = 'Roboto, sans-serif';
+                // Animar a entrada das seções do dashboard
+                 document.querySelectorAll('.admin-section-dashboard').forEach(el => {
+                    el.style.animationPlayState = 'running';
+                });
                 populateUserData();
                 updateAdminStats();
             }
@@ -1820,6 +1890,7 @@
             // --- LÓGICA DA SIDEBAR ---
             window.toggleSidebar = () => {
                 mySidebar.classList.toggle('open');
+                menuToggleBtn.classList.toggle('active'); // Ativa/desativa rotação
             };
 
             window.addEventListener('click', (event) => {
@@ -1828,6 +1899,7 @@
                 
                 if (mySidebar.classList.contains('open') && !isClickInsideSidebar && !isClickOnMenuToggle) {
                     mySidebar.classList.remove('open');
+                    menuToggleBtn.classList.remove('active'); // Desativa rotação
                 }
             });
 
@@ -1839,9 +1911,31 @@
 
                 newsGridContainer.innerHTML = '';
 
-                siteNews.slice().reverse().forEach(news => {
+                // Aumenta o número de notícias padrão para preencher melhor (se houver poucas)
+                const currentNewsCount = siteNews.length;
+                if (currentNewsCount < 3) { // Se tiver menos de 3 notícias, adiciona mais algumas placeholders
+                    for (let i = currentNewsCount + 1; i <= 3; i++) {
+                        siteNews.push({
+                            id: nextNewsId++,
+                            title: `Notícia de Exemplo ${i}`,
+                            content: `Este é um conteúdo de notícia de exemplo para preencher o espaço.`,
+                            author: 'Redação',
+                            date: 'Outubro 28, 2025',
+                            image: `https://via.placeholder.com/400x250/${(i % 2 === 0 ? 'FFD700' : '00C9A7')}/0A1128?text=Exemplo+Noticia+${i}`
+                        });
+                    }
+                    saveToLocalStorage('siteNews', siteNews); // Salva as placeholders adicionadas
+                }
+
+                siteNews.slice().reverse().forEach((news, index) => {
                     const article = document.createElement('article');
                     article.classList.add('news-card');
+                    article.classList.add('animate-scale-in'); // Adiciona a classe de animação
+                    // Adiciona delay para cascata
+                    if (index === 0) article.classList.add('delay-05');
+                    else if (index === 1) article.classList.add('delay-1');
+                    else if (index === 2) article.classList.add('delay-1'); // Pode ser 1.5, etc.
+                    
                     const imageUrl = news.image || `https://via.placeholder.com/400x250/00C9A7/0A1128?text=Noticia`;
                     article.innerHTML = `
                         <img src="${imageUrl}" alt="${news.title}">
@@ -1861,9 +1955,30 @@
 
                 postsGridContainer.innerHTML = '';
 
-                sitePosts.slice().reverse().forEach(post => {
+                const currentPostsCount = sitePosts.length;
+                if (currentPostsCount < 2) { // Se tiver menos de 2 postagens, adiciona mais algumas
+                    for (let i = currentPostsCount + 1; i <= 2; i++) {
+                        sitePosts.push({
+                            id: nextPostId++,
+                            title: `Postagem de Exemplo ${i}`,
+                            content: `Este é um conteúdo de postagem de exemplo para preencher o espaço.`,
+                            author: 'Redação',
+                            authorId: 0, // ID 0 para postagens genéricas
+                            date: 'Outubro 28, 2025'
+                        });
+                    }
+                    saveToLocalStorage('sitePosts', sitePosts);
+                }
+
+                sitePosts.slice().reverse().forEach((post, index) => {
                     const article = document.createElement('article');
                     article.classList.add('post-card');
+                    if (index === 0) article.classList.add('animate-slide-in-left');
+                    else if (index === 1) article.classList.add('animate-slide-in-right');
+                    else article.classList.add('animate-slide-in-left'); // Alterna para outros
+                    
+                    if (index === 1) article.classList.add('delay-05');
+                    
                     const imageUrl = `https://via.placeholder.com/300x200/${(post.authorId % 2 === 0 ? 'FFD700' : '00C9A7')}/0A1128?text=Postagem`;
                     article.innerHTML = `
                         <img src="${imageUrl}" alt="${post.title}">
@@ -1903,47 +2018,37 @@
             };
 
 
-            // === Observador de Interseção para Animações de Revelação ===
+            // === Observador de Interseção para Animações de Revelação e Cards ===
             const sections = document.querySelectorAll('.reveal');
-            const options = {
+            const sectionOptions = {
                 root: null,
                 rootMargin: '0px',
                 threshold: 0.2
             };
 
-            const observer = new IntersectionObserver((entries, observer) => {
+            const sectionObserver = new IntersectionObserver((entries, observer) => {
                 entries.forEach(entry => {
                     if (entry.isIntersecting) {
                         entry.target.classList.add('active');
+                        // Também ativa as animações dos cards dentro da seção
+                        entry.target.querySelectorAll('.animate-scale-in, .animate-slide-in-left, .animate-slide-in-right, .animate-fade-in').forEach(card => {
+                            card.style.animationPlayState = 'running';
+                        });
+                    } else {
+                        // Opcional: Para reanimar ao rolar para cima/baixo, remova 'active'
+                        // entry.target.classList.remove('active');
+                        // entry.target.querySelectorAll('.animate-scale-in, .animate-slide-in-left, .animate-slide-in-right, .animate-fade-in').forEach(card => {
+                        //     card.style.animationPlayState = 'paused';
+                        // });
                     }
                 });
-            }, options);
+            }, sectionOptions);
 
             sections.forEach(section => {
-                observer.observe(section);
+                sectionObserver.observe(section);
             });
-
-            // Aplica animação aos cards no carregamento da página ou ao entrar na viewport
-            const animatedCards = document.querySelectorAll('.animate-scale-in, .animate-slide-in-left, .animate-slide-in-right, .animate-fade-in');
-            const cardOptions = {
-                root: null,
-                rootMargin: '0px',
-                threshold: 0.1
-            };
-
-            const cardObserver = new IntersectionObserver((entries, observer) => {
-                entries.forEach(entry => {
-                    if (entry.isIntersecting) {
-                        entry.target.style.animationPlayState = 'running';
-                        observer.unobserve(entry.target);
-                    }
-                });
-            }, cardOptions);
-
-            animatedCards.forEach(card => {
-                card.style.animationPlayState = 'paused';
-                cardObserver.observe(card);
-            });
+            // O código de `animatedCards` e `cardObserver` pode ser removido pois o `sectionObserver` já está cuidando disso.
+            // Os cards agora começam pausados e só animam quando a seção entra na viewport.
 
 
             // --- Lógica dos Modais (Login, Registro, Criar Postagem, Criar Notícia) ---
@@ -1955,10 +2060,12 @@
             // Funções genéricas para abrir/fechar modais
             function openModal(modalElement) {
                 modalElement.classList.add('open');
-                modalElement.querySelector('.error-message').classList.remove('show');
+                const errorMessageElement = modalElement.querySelector('.error-message');
+                if(errorMessageElement) errorMessageElement.classList.remove('show');
                 const form = modalElement.querySelector('form');
                 if (form) form.reset();
                 mySidebar.classList.remove('open');
+                menuToggleBtn.classList.remove('active'); // Desativa rotação do hambúrguer
             }
 
             function closeModal(modalElement) {
@@ -1985,7 +2092,7 @@
             sidebarLogoutBtn.addEventListener('click', (e) => {
                 e.preventDefault();
                 loggedInUser = null;
-                saveToLocalStorage('loggedInUser', null); // Limpa o usuário logado
+                saveToLocalStorage('loggedInUser', null);
                 updateSidebarAuthButtons();
                 showMainSite();
                 alert('Você foi desconectado.');
@@ -2031,7 +2138,7 @@
                     loginMessage.style.color = '#2ecc71';
                     loginMessage.classList.add('show');
                     loggedInUser = userFound;
-                    saveToLocalStorage('loggedInUser', loggedInUser); // SALVANDO AQUI
+                    saveToLocalStorage('loggedInUser', loggedInUser);
 
                     setTimeout(() => {
                         closeModal(loginModal);
@@ -2113,7 +2220,7 @@
                     status: 'Ativo'
                 };
                 registeredUsers.push(newUser);
-                saveToLocalStorage('registeredUsers', registeredUsers); // SALVANDO AQUI
+                saveToLocalStorage('registeredUsers', registeredUsers);
 
                 registerMessage.textContent = 'Registro bem-sucedido! Faça login agora.';
                 registerMessage.style.color = '#2ecc71';
@@ -2155,7 +2262,7 @@
                     date: currentDate
                 };
                 sitePosts.push(newPost);
-                saveToLocalStorage('sitePosts', sitePosts); // SALVANDO AQUI
+                saveToLocalStorage('sitePosts', sitePosts);
 
                 createPostMessage.textContent = 'Postagem criada com sucesso!';
                 createPostMessage.style.color = '#2ecc71';
@@ -2164,7 +2271,7 @@
                 setTimeout(() => {
                     closeModal(createPostModal);
                     renderPosts();
-                    populateUserProfile();
+                    populateUserProfile(); // Atualiza as postagens no perfil do usuário
                     updateAdminStats();
                     showSiteSection('postagens');
                 }, 1500);
@@ -2186,18 +2293,19 @@
                 profileEmail.textContent = loggedInUser.email;
 
                 userPostsList.innerHTML = '';
-                // Filtra posts pelo ID do autor do usuário logado
                 const userSpecificPosts = sitePosts.filter(post => post.authorId === loggedInUser.id).reverse();
 
                 if (userSpecificPosts.length > 0) {
                     noUserPostsMessage.style.display = 'none';
-                    userSpecificPosts.forEach(post => {
+                    userSpecificPosts.forEach((post, index) => {
                         const listItem = document.createElement('li');
                         listItem.innerHTML = `
                             <h4>${post.title}</h4>
                             <p>${post.content.substring(0, 150)}...</p>
                             <span class="post-date">${post.date}</span>
                         `;
+                        // Adiciona delay para animação em cascata nas postagens do perfil
+                        listItem.style.animationDelay = `${index * 0.1}s`;
                         userPostsList.appendChild(listItem);
                     });
                 } else {
@@ -2230,12 +2338,12 @@
 
                     if (username === correctAdminUsername && password === correctAdminPassword) {
                         adminLoginMessage.textContent = 'Login bem-sucedido! Redirecionando para o dashboard...';
-                        adminLoginMessage.style.color = '#28a745';
+                        adminLoginMessage.style.color = '#2ecc71';
                         adminLoginMessage.classList.add('show');
 
                         isAdminLoggedIn = true;
-                        saveToLocalStorage('isAdminLoggedIn', true); // SALVANDO AQUI
-                        saveToLocalStorage('adminUser', username); // SALVANDO AQUI
+                        saveToLocalStorage('isAdminLoggedIn', true);
+                        saveToLocalStorage('adminUser', username);
 
                         setTimeout(() => {
                             showAdminDashboard();
@@ -2277,7 +2385,6 @@
 
                 userDataBody.innerHTML = '';
 
-                // Inclui todos os usuários (iniciais + registrados dinamicamente)
                 registeredUsers.forEach(user => {
                     const row = userDataBody.insertRow();
                     row.innerHTML = `
@@ -2291,6 +2398,9 @@
                             <button onclick="deleteUser(${user.id})">Excluir</button>
                         </td>
                     `;
+                    // Animação para linhas da tabela (opcional, pode ser muito em tabelas grandes)
+                    // row.style.opacity = 0;
+                    // row.style.animation = `fadeInUp 0.5s ease-out forwards ${index * 0.1}s`;
                 });
             }
 
@@ -2327,7 +2437,7 @@
                         populateUserData();
                         updateAdminStats();
                         renderPosts();
-                        populateUserProfile(); // Caso o perfil esteja visível, atualiza
+                        populateUserProfile();
                     } else {
                         alert(`Usuário com ID: ${id} não encontrado.`);
                     }
@@ -2362,10 +2472,10 @@
                     content: content,
                     author: loadFromLocalStorage('adminUser', 'Admin'),
                     date: currentDate,
-                    image: `https://via.placeholder.com/400x250/00C9A7/0A1128?text=Nova+Noticia+${nextNewsId-1}`
+                    image: `https://via.placeholder.com/400x250/00C9A7/0A1128?text=Noticia+${nextNewsId-1}` // Imagem dinâmica
                 };
                 siteNews.push(newNews);
-                saveToLocalStorage('siteNews', siteNews); // SALVANDO AQUI
+                saveToLocalStorage('siteNews', siteNews);
 
                 createNewsMessage.textContent = 'Notícia publicada com sucesso!';
                 createNewsMessage.style.color = '#2ecc71';
@@ -2384,16 +2494,9 @@
             if (adminResetDataBtn) {
                 adminResetDataBtn.addEventListener('click', () => {
                     if (confirm('Tem certeza que deseja resetar TODOS os dados do aplicativo (usuários, posts, notícias)? Esta ação é irreversível.')) {
-                        // Limpa todos os itens do localStorage usados pelo app
-                        localStorage.removeItem('registeredUsers');
-                        localStorage.removeItem('sitePosts');
-                        localStorage.removeItem('siteNews');
-                        localStorage.removeItem('loggedInUser');
-                        localStorage.removeItem('isAdminLoggedIn');
-                        localStorage.removeItem('adminUser');
-
+                        localStorage.clear(); // Limpa TUDO do localStorage
                         alert('Todos os dados do aplicativo foram resetados. A página será recarregada.');
-                        location.reload(); // Recarrega a página para aplicar os novos defaults (do código)
+                        location.reload();
                     }
                 });
             }
@@ -2404,15 +2507,14 @@
                 adminLogoutBtnDashboard.addEventListener('click', (e) => {
                     e.preventDefault();
                     isAdminLoggedIn = false;
-                    localStorage.removeItem('isAdminLoggedIn'); // Limpa status de admin
-                    localStorage.removeItem('adminUser'); // Limpa nome do admin
+                    localStorage.removeItem('isAdminLoggedIn');
+                    localStorage.removeItem('adminUser');
                     showMainSite();
                     alert('Administrador desconectado.');
                 });
             }
 
             // --- Inicialização ao Carregar a Página ---
-            // Verifica o estado de login (admin ou usuário) ao carregar a página e mostra a seção apropriada
             // Adicionado um pequeno delay para garantir que o DOM esteja completamente renderizado
             setTimeout(() => {
                 if (isAdminLoggedIn) {
@@ -2420,8 +2522,7 @@
                 } else {
                     showMainSite();
                 }
-                updateSidebarAuthButtons(); // Garante que os botões da sidebar estão corretos
-            }, 100); // 100ms de delay
+            }, 100);
         });
     </script>
 </body>
